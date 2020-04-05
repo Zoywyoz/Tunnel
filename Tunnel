@@ -1,0 +1,60 @@
+float sds = 6;
+float limr = 10;
+
+int nFramesInLoop = 30;
+int nElapsedFrames;
+boolean bRecording;
+
+void setup() {
+  size(1080, 1080);
+
+  frameRate(30);
+  bRecording = true;
+  nElapsedFrames = 0;
+}
+
+void renderMyDesign (float percent) {
+  float sA = sin(map(percent, 0, 1, 0, PI));
+  float angle = map(sA, 0, 1, PI/60, PI/61);
+  background(80);
+  translate(width / 2, height / 2);
+  rotate(map(percent, 0, 1, 0, TWO_PI/sds));
+  stroke(255);
+  fill(0);
+  colorMode(HSB);
+
+  for (float r = width*5/6; r > limr; r *= sin(HALF_PI * (1 - 2 / sds)) / sin(HALF_PI * (1 + 2 / sds) - angle)) {
+    strokeWeight(map(r, 0, width*5/6, 0, 5));
+    float v = cos(map(r, width*5/6, limr, 0, HALF_PI));
+    float strk = map(v*v, 1, 0, 255, 0) - map(sin(map(percent, 0, 1, 0, TWO_PI)), -1, 1, 0, 30);
+    stroke(strk); // (map(r*r, limr*limr, width*5/6*width*5/6, 0, 255));
+    fill(strk);
+    beginShape();
+    for (float a = 0; a < TWO_PI; a += TWO_PI / sds) {
+      float x = cos(a) * r;
+      float y = sin(a) * r;
+      vertex(x, y);
+    }
+    endShape(CLOSE);
+    rotate(angle);
+  }
+}
+
+void draw() {
+  float percentCompleteFraction = 0; 
+  if (bRecording) {
+    percentCompleteFraction = (float) nElapsedFrames / (float)nFramesInLoop;
+  } else {
+    percentCompleteFraction = (float) (frameCount % nFramesInLoop) / (float)nFramesInLoop;
+  }
+
+  renderMyDesign (percentCompleteFraction);
+
+  if (bRecording) {
+    saveFrame("animation_BW_2/frame" + nf(nElapsedFrames, 4) + ".png");
+    nElapsedFrames++; 
+    if (nElapsedFrames >= nFramesInLoop) {
+      bRecording = false;
+    }
+  }
+}
